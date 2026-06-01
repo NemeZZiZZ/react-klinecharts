@@ -5,6 +5,7 @@ import type {
   IndicatorCreate,
   OverlayCreate,
   PaneOptions,
+  YAxisOverride,
   Formatter,
   SymbolInfo,
   Period,
@@ -142,6 +143,13 @@ export interface UseIndicatorOptions {
   /** Whether to stack on existing indicators in the same pane. */
   isStack?: boolean;
   /** Pane options for the indicator pane. */
+  pane?: PaneOptions;
+  /** Y axis override for the indicator pane. */
+  yAxis?: YAxisOverride;
+  /**
+   * Pane options for the indicator pane.
+   * @deprecated Renamed to `pane` to match KLineCharts v10. Use `pane` instead.
+   */
   paneOptions?: PaneOptions;
 }
 

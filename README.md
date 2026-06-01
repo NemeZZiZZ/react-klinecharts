@@ -44,7 +44,7 @@ function App() {
       style={{ width: "100%", height: 600 }}
     >
       <KLineChart.Indicator value={{ name: "MA", calcParams: [5, 10, 30] }} />
-      <KLineChart.Indicator value="VOL" paneOptions={{ height: 80 }} />
+      <KLineChart.Indicator value="VOL" pane={{ height: 80 }} />
     </KLineChart>
   );
 }
@@ -118,7 +118,7 @@ Declarative indicator management. Renders nothing — purely manages indicator l
 <KLineChart.Indicator
   value={{ name: "MA", calcParams: [5, 10, 30] }}
   isStack={false}
-  paneOptions={{ height: 100 }}
+  pane={{ height: 100 }}
 />
 
 // Or simply by name:
@@ -129,7 +129,8 @@ Declarative indicator management. Renders nothing — purely manages indicator l
 |------|------|-------------|
 | `value` | `string \| IndicatorCreate` | Indicator name or full config |
 | `isStack` | `boolean` | Stack on existing indicators in same pane |
-| `paneOptions` | `PaneOptions` | Options for the indicator pane |
+| `pane` | `PaneOptions` | Options for the indicator pane |
+| `yAxis` | `YAxisOverride` | Y axis override for the indicator pane |
 
 ### `<KLineChart.Overlay>`
 
@@ -188,7 +189,7 @@ Manages indicator lifecycle. Creates on mount, removes on unmount, overrides on 
 function MyIndicator() {
   const paneId = useIndicator({
     value: { name: "RSI", calcParams: [14] },
-    paneOptions: { height: 80 },
+    pane: { height: 80 },
   });
   return null;
 }
@@ -255,7 +256,7 @@ chartRef.current?.setPaneOptions(options);
 chartRef.current?.getPaneOptions(id);
 
 // Imperative indicator/overlay operations
-chartRef.current?.createIndicator(value, isStack, paneOptions);
+chartRef.current?.createIndicator(value, { isStack, pane, yAxis });
 chartRef.current?.getIndicators(filter);
 chartRef.current?.createOverlay(value);
 chartRef.current?.getOverlays(filter);

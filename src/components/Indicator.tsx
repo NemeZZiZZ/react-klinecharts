@@ -11,7 +11,7 @@ export type IndicatorProps = UseIndicatorOptions;
  * ```tsx
  * <KLineChart data={data}>
  *   <KLineChart.Indicator value={{ name: "MA", calcParams: [5, 10, 30] }} />
- *   <KLineChart.Indicator value="VOL" paneOptions={{ height: 80 }} />
+ *   <KLineChart.Indicator value="VOL" pane={{ height: 80 }} />
  * </KLineChart>
  * ```
  */

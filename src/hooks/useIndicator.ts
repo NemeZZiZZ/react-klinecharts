@@ -1,5 +1,10 @@
 import { useEffect, useId, useRef } from "react";
-import type { IndicatorCreate, PaneOptions, Nullable } from "klinecharts";
+import type {
+  IndicatorCreate,
+  PaneOptions,
+  YAxisOverride,
+  Nullable,
+} from "klinecharts";
 import { useKLineChart } from "./useKLineChart";
 
 export interface UseIndicatorOptions {
@@ -8,6 +13,13 @@ export interface UseIndicatorOptions {
   /** Whether to stack on existing indicators in the same pane. */
   isStack?: boolean;
   /** Pane options for the indicator pane. */
+  pane?: PaneOptions;
+  /** Y axis override for the indicator pane. */
+  yAxis?: YAxisOverride;
+  /**
+   * Pane options for the indicator pane.
+   * @deprecated Renamed to `pane` to match KLineCharts v10. Use `pane` instead.
+   */
   paneOptions?: PaneOptions;
 }
 
@@ -21,7 +33,7 @@ export interface UseIndicatorOptions {
 export function useIndicator(options: UseIndicatorOptions): Nullable<string> {
   const chart = useKLineChart();
   const paneIdRef = useRef<Nullable<string>>(null);
-  const { value, isStack, paneOptions } = options;
+  const { value, isStack, pane, paneOptions, yAxis } = options;
 
   // Stable unique ID per component instance — survives re-renders,
   // guarantees cleanup removes exactly the indicator we created.
@@ -41,7 +53,11 @@ export function useIndicator(options: UseIndicatorOptions): Nullable<string> {
         ? { name: value, id: indicatorId }
         : { ...value, id: indicatorId };
 
-    paneIdRef.current = chart.createIndicator(create, isStack, paneOptions);
+    paneIdRef.current = chart.createIndicator(create, {
+      isStack,
+      pane: pane ?? paneOptions,
+      yAxis,
+    });
 
     return () => {
       chart.removeIndicator({ id: indicatorId });

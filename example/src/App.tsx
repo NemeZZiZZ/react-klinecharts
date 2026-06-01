@@ -285,7 +285,7 @@ const App: React.FC = () => {
           />
         )}
         {showVOL && (
-          <KLineChart.Indicator value="VOL" paneOptions={{ height: 80 }} />
+          <KLineChart.Indicator value="VOL" pane={{ height: 80 }} />
         )}
         <CrosshairTracker />
       </KLineChart>
