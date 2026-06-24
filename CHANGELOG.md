@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-06-24
+
+### Changed
+- Bumped `klinecharts` to `^10.0.0-beta3`. No public API changes in this wrapper.
+
+### Note
+- klinecharts `beta3` adjusts the **RSI** indicator calculation, so RSI values may differ from `beta2`. It also adds custom hot keys and a continuous drawing mode (with a built-in `brush` tool), plus fixes for overlay scrolling, `createOverlay` restoration, backward data-loading callbacks, and the `resize` method.
+
 ## [0.2.0] - 2026-06-01
 
 ### Changed

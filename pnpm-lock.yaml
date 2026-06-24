@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       klinecharts:
-        specifier: ^10.0.0-beta2
-        version: 10.0.0-beta2
+        specifier: ^10.0.0-beta3
+        version: 10.0.0-beta3
       react:
         specifier: ^17.0.0 || ^18.0.0 || ^19.0.0
         version: 19.2.4
@@ -857,8 +857,8 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  klinecharts@10.0.0-beta2:
-    resolution: {integrity: sha512-CsbMhpJHNYLaJrvV56Lms2Y9U/DskNJORVvGRPXoKOT2jyW7hCdKI/0AqG1GW8e3HVwFZFOzCcCjcv0+cZf14g==}
+  klinecharts@10.0.0-beta3:
+    resolution: {integrity: sha512-ZDYcw0+QfIa6oqgj+yV3+BMFVMDxkyoWazfhuYqu0I6XOsK9ezccO19dRNBw3wSqzidcVmMS7LpiVkm5rfV9ow==}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -1832,7 +1832,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  klinecharts@10.0.0-beta2: {}
+  klinecharts@10.0.0-beta3: {}
 
   levn@0.4.1:
     dependencies:
