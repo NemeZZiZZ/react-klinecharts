@@ -45,6 +45,12 @@ export function useIndicator(options: UseIndicatorOptions): Nullable<string> {
   // Serialize value for dependency comparison (small config objects)
   const valueKey = typeof value === "string" ? value : JSON.stringify(value);
 
+  // Serialize pane/yAxis so changing them recreates the indicator (klinecharts
+  // has no API to reassign an existing indicator to a different pane or axis).
+  const paneKey =
+    (pane ?? paneOptions) ? JSON.stringify(pane ?? paneOptions) : "";
+  const yAxisKey = yAxis ? JSON.stringify(yAxis) : "";
+
   useEffect(() => {
     if (!chart || !indicatorName) return;
 
@@ -64,11 +70,18 @@ export function useIndicator(options: UseIndicatorOptions): Nullable<string> {
       paneIdRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart, indicatorName, isStack, indicatorId]);
+  }, [chart, indicatorName, isStack, indicatorId, paneKey, yAxisKey]);
 
-  // Override indicator config when value object changes
+  // Override indicator config when the value object changes.
+  // We must skip the first run: the create-effect above already applied the
+  // initial value, so overriding immediately would be a redundant call.
+  const firstOverrideRef = useRef(true);
   useEffect(() => {
     if (!chart || typeof value === "string") return;
+    if (firstOverrideRef.current) {
+      firstOverrideRef.current = false;
+      return;
+    }
     chart.overrideIndicator({ ...value, id: indicatorId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, valueKey, indicatorId]);

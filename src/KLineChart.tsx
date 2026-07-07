@@ -1,16 +1,9 @@
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type Ref,
-} from "react";
+import { forwardRef, useEffect, useRef, useState, type Ref } from "react";
 import {
   init,
   dispose,
-  type Chart,
   type ActionCallback,
+  type Chart,
   type ActionType,
 } from "klinecharts";
 
@@ -18,6 +11,8 @@ import { KLineChartContext } from "./KLineChartContext";
 import { Indicator } from "./components/Indicator";
 import { Overlay } from "./components/Overlay";
 import { Widget } from "./components/Widget";
+import { subscribeChartAction } from "./subscribeChartAction";
+import type { ActionPayloadMap } from "./events";
 import type { KLineChartProps } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -38,10 +33,10 @@ function updateForwardedRef(ref: Ref<Chart> | undefined, chart: Chart | null) {
  * The latest callback is always read from a ref to avoid re-subscribing on
  * every render.
  */
-function useActionSubscription(
+function useActionSubscription<T extends ActionType>(
   chart: Chart | null,
-  actionType: ActionType,
-  callback: ActionCallback | undefined
+  actionType: T,
+  callback: ((data: ActionPayloadMap[T]) => void) | undefined
 ) {
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
@@ -50,13 +45,12 @@ function useActionSubscription(
     if (!chart) return;
 
     const handler: ActionCallback = (data) => {
-      callbackRef.current?.(data);
+      // klinecharts emits payloads of type ActionPayloadMap[T]; cast back
+      // from the loose `unknown` the ActionCallback signature uses.
+      callbackRef.current?.(data as ActionPayloadMap[T]);
     };
 
-    chart.subscribeAction(actionType, handler);
-    return () => {
-      chart.unsubscribeAction(actionType, handler);
-    };
+    return subscribeChartAction(chart, actionType, handler);
   }, [chart, actionType]);
 }
 
@@ -92,11 +86,14 @@ const KLineChartInner = forwardRef<Chart, KLineChartProps>(
       leftMinVisibleBarCount,
       rightMinVisibleBarCount,
       barSpace,
+      hotkey,
+      xAxis,
+      yAxis,
 
       // Events
       onReady,
       onZoom,
-      onScroll,
+      onChartScroll,
       onVisibleRangeChange,
       onCrosshairChange,
       onCandleBarClick,
@@ -121,30 +118,14 @@ const KLineChartInner = forwardRef<Chart, KLineChartProps>(
     const onReadyRef = useRef(onReady);
     onReadyRef.current = onReady;
 
-    // ---- Resize observation (native ResizeObserver) ----
-    const handleResize = useCallback(() => {
-      chartRef.current?.resize();
-    }, []);
-
-    useEffect(() => {
-      const el = containerRef.current;
-      if (!el) return;
-
-      const observer = new ResizeObserver(handleResize);
-      observer.observe(el);
-      return () => observer.disconnect();
-    }, [handleResize]);
-
     // ---- Initialization (mount-only, StrictMode-safe) ----
+    // In React 18+ StrictMode (dev), React runs the effect, then its cleanup,
+    // then the effect again. Because the cleanup below disposes the chart and
+    // nulls chartRef, the second run always starts from a clean state, so no
+    // explicit "dispose previous" guard is needed here.
     useEffect(() => {
       const container = containerRef.current;
       if (!container) return;
-
-      // Dispose any leftover chart from a previous StrictMode cycle
-      if (chartRef.current) {
-        dispose(container);
-        chartRef.current = null;
-      }
 
       const instance = init(container, options);
       if (!instance) return;
@@ -177,12 +158,14 @@ const KLineChartInner = forwardRef<Chart, KLineChartProps>(
     useEffect(() => {
       if (!chart) return;
       if (dataLoader) {
+        // When a real loader is supplied, let klinecharts own the data flow.
         chart.setDataLoader(dataLoader);
       } else if (data) {
-        // Fallback or static data array setter for v10 API
+        // Wrap the static array in a minimal loader. `more: { forward: false }`
+        // tells klinecharts there is no older history to load on scroll-left.
         chart.setDataLoader({
           getBars: ({ callback }) => {
-            callback(data, false);
+            callback(data, { forward: false, backward: false });
           },
         });
       }
@@ -242,16 +225,10 @@ const KLineChartInner = forwardRef<Chart, KLineChartProps>(
     }, [chart, scrollEnabled]);
 
     useEffect(() => {
+      // Pass-through: klinecharts' setZoomAnchor already accepts both the
+      // string form and the partial object form, so do not impose defaults.
       if (!chart || zoomAnchor === undefined) return;
-      const resolved =
-        typeof zoomAnchor === "string"
-          ? { main: zoomAnchor, xAxis: zoomAnchor }
-          : {
-              main: "cursor" as const,
-              xAxis: "cursor" as const,
-              ...zoomAnchor,
-            };
-      chart.setZoomAnchor(resolved);
+      chart.setZoomAnchor(zoomAnchor);
     }, [chart, zoomAnchor]);
 
     useEffect(() => {
@@ -284,9 +261,24 @@ const KLineChartInner = forwardRef<Chart, KLineChartProps>(
       chart.setBarSpace(barSpace);
     }, [chart, barSpace]);
 
+    useEffect(() => {
+      if (!chart || hotkey === undefined) return;
+      chart.setHotkey(hotkey);
+    }, [chart, hotkey]);
+
+    useEffect(() => {
+      if (!chart || xAxis === undefined) return;
+      chart.overrideXAxis(xAxis);
+    }, [chart, xAxis]);
+
+    useEffect(() => {
+      if (!chart || yAxis === undefined) return;
+      chart.overrideYAxis(yAxis);
+    }, [chart, yAxis]);
+
     // ---- Event subscriptions ----
     useActionSubscription(chart, "onZoom", onZoom);
-    useActionSubscription(chart, "onScroll", onScroll);
+    useActionSubscription(chart, "onScroll", onChartScroll);
     useActionSubscription(chart, "onVisibleRangeChange", onVisibleRangeChange);
     useActionSubscription(chart, "onCrosshairChange", onCrosshairChange);
     useActionSubscription(chart, "onCandleBarClick", onCandleBarClick);

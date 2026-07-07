@@ -5,11 +5,12 @@ A flexible React wrapper for [KlineCharts](https://klinecharts.com) with hooks, 
 [Live Demo](https://nemezzizz.github.io/react-klinecharts/)
 
 - Declarative props for all reactive chart settings
-- `<KLineChart.Indicator>` and `<KLineChart.Overlay>` sub-components
-- `useKLineChart`, `useIndicator`, `useOverlay`, `useChartEvent` hooks
+- `<KLineChart.Indicator>`, `<KLineChart.Overlay>` and `<KLineChart.Widget>` sub-components
+- Hooks: `useKLineChart`, `useIndicator`, `useOverlay`, `useChartEvent`, `useCrosshair`, `useVisibleRange`, `useBarSpace`, `useDataList`, `usePane`
+- **Strongly typed event callbacks** — no more `as Crosshair` casts
 - Full imperative access via ref
 - Re-exports all klinecharts types and utilities
-- Zero extra dependencies (native `ResizeObserver`)
+- StrictMode-safe, no extra dependencies (klinecharts manages its own `ResizeObserver`)
 
 ## Installation
 
@@ -56,7 +57,7 @@ function App() {
 
 The core component. Manages chart lifecycle, provides context for hooks and sub-components.
 
-All standard HTML `div` attributes (`className`, `style`, `id`, etc.) are passed through to the container element.
+All standard HTML `div` attributes (`className`, `style`, `id`, etc.) are passed through to the container element. The native DOM `onScroll` handler is passed through unchanged; chart scroll events use [`onChartScroll`](#event-callbacks) instead.
 
 #### Init-only Props
 
@@ -68,7 +69,7 @@ All standard HTML `div` attributes (`className`, `style`, `id`, etc.) are passed
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `data` | `KLineData[]` | Static data array to apply to the chart. |
+| `data` | `KLineData[]` | Static data array. Replacing the array re-applies the data (use `dataLoader` for streaming). |
 | `dataLoader` | `DataLoader` | Data loader with `getBars`, `subscribeBar`, `unsubscribeBar`. Calls `setDataLoader`. |
 | `symbol` | `SymbolInfo` | Symbol info (ticker, precision). Calls `setSymbol`. |
 | `period` | `Period` | Time period (`{ type, span }`). Calls `setPeriod`. |
@@ -94,21 +95,26 @@ These props are synced to the chart instance via `useEffect`. Changing them upda
 | `leftMinVisibleBarCount` | `number` | `setLeftMinVisibleBarCount()` |
 | `rightMinVisibleBarCount` | `number` | `setRightMinVisibleBarCount()` |
 | `barSpace` | `number` | `setBarSpace()` |
+| `hotkey` | `Partial<Hotkey>` | `setHotkey()` |
+| `xAxis` | `XAxisOverride` | `overrideXAxis()` |
+| `yAxis` | `YAxisOverride` | `overrideYAxis()` |
 
 #### Event Callbacks
 
-| Prop | Description |
-|------|-------------|
-| `onReady` | `(chart: Chart) => void` — fired after chart initialization |
-| `onZoom` | Chart zoom event |
-| `onScroll` | Chart scroll event |
-| `onVisibleRangeChange` | Visible data range changed |
-| `onCrosshairChange` | Crosshair position changed |
-| `onCandleBarClick` | Candle bar clicked |
-| `onPaneDrag` | Pane drag event |
-| `onCandleTooltipFeatureClick` | Candle tooltip feature clicked |
-| `onIndicatorTooltipFeatureClick` | Indicator tooltip feature clicked |
-| `onCrosshairFeatureClick` | Crosshair feature clicked |
+Event callbacks are **strongly typed**: the `data` argument matches the payload klinecharts emits for that action. For example, `onCrosshairChange` receives a `Crosshair` and `onCandleBarClick` receives the clicked `KLineData` — no casts required.
+
+| Prop | Signature | Description |
+|------|-----------|-------------|
+| `onReady` | `(chart: Chart) => void` | Fired after chart initialization |
+| `onZoom` | `(data: { scale: number }) => void` | Chart zoom event |
+| `onChartScroll` | `(data: { distance: number }) => void` | Chart scroll event (klinecharts `onScroll` action; renamed to avoid colliding with the native DOM `onScroll`) |
+| `onVisibleRangeChange` | `(data: VisibleRange) => void` | Visible data range changed |
+| `onCrosshairChange` | `(data: Crosshair) => void` | Crosshair position changed |
+| `onCandleBarClick` | `(data: KLineData) => void` | Candle bar clicked |
+| `onPaneDrag` | `(data: { paneId: string }) => void` | Pane drag event |
+| `onCandleTooltipFeatureClick` | `(data: unknown) => void` | Candle tooltip feature clicked |
+| `onIndicatorTooltipFeatureClick` | `(data: unknown) => void` | Indicator tooltip feature clicked |
+| `onCrosshairFeatureClick` | `(data: unknown) => void` | Crosshair feature clicked |
 
 ### `<KLineChart.Indicator>`
 
@@ -156,6 +162,8 @@ Declarative overlay (drawing tool) management. Renders nothing — purely manage
 
 Declarative portal component that injects standard HTML/React elements directly into the chart DOM utilizing `createPortal` and the native `chart.getDom()` method.
 
+If the target pane has not been laid out yet (e.g. an indicator pane that is created asynchronously), the widget retries on the next animation frame until the node is available.
+
 ```tsx
 <KLineChart.Widget paneId="candle" position="main">
   <div className="custom-tooltip">My interactive React tooltip!</div>
@@ -178,6 +186,26 @@ function MyComponent() {
   const chart = useKLineChart();
   // chart is Chart | null
   return <button onClick={() => chart?.scrollToRealTime()}>Go to now</button>;
+}
+```
+
+#### State-tracking hooks
+
+These hooks subscribe to chart actions and re-render the host component when the tracked value changes. They return `null` (or an empty array for `usePane()`) before the chart is initialized.
+
+| Hook | Returns | Re-renders on |
+|------|---------|---------------|
+| `useCrosshair()` | `Crosshair \| null` | `onCrosshairChange` |
+| `useVisibleRange()` | `VisibleRange \| null` | `onVisibleRangeChange` |
+| `useBarSpace()` | `BarSpace \| null` | `onVisibleRangeChange` (covers zoom/resize) |
+| `useDataList()` | `KLineData[] \| null` | `onVisibleRangeChange` |
+| `usePane()` / `usePane(id)` | `PaneOptions[]` or `Nullable<PaneOptions>` | `onVisibleRangeChange` |
+
+```tsx
+function CrosshairInfo() {
+  const crosshair = useCrosshair();
+  if (!crosshair?.kLineData) return <span>Hover the chart</span>;
+  return <span>{crosshair.kLineData.close}</span>;
 }
 ```
 
@@ -210,12 +238,12 @@ function MyOverlay() {
 
 #### `useChartEvent(type, callback)`
 
-Subscribe to chart action events with a stable ref-based handler.
+Subscribe to any chart action event with a stable ref-based handler. The callback is strongly typed based on the action type.
 
 ```tsx
 function Logger() {
-  useChartEvent("onCrosshairChange", (data) => {
-    console.log("Crosshair:", data);
+  useChartEvent("onCrosshairChange", (crosshair) => {
+    console.log("Crosshair:", crosshair.x, crosshair.y);
   });
   return null;
 }
@@ -277,6 +305,7 @@ import {
   registerStyles,
   registerXAxis,
   registerYAxis,
+  registerHotkey,
 } from "react-klinecharts";
 
 // Register a custom indicator
@@ -291,7 +320,7 @@ registerIndicator({
 
 ### Type Re-exports
 
-All klinecharts types are re-exported for convenience:
+All klinecharts types are re-exported for convenience, plus the wrapper's own helper types:
 
 ```tsx
 import type {
@@ -309,6 +338,9 @@ import type {
   DataLoader,
   SymbolInfo,
   Period,
+  // wrapper-specific
+  ActionPayloadMap,
+  TypedActionCallback,
   // ... all klinecharts types
 } from "react-klinecharts";
 ```
@@ -329,7 +361,7 @@ function App() {
   const [period, setPeriod] = useState(20);
 
   return (
-    <KLineChart dataLoader={loader} symbol={symbol} period={period_}>
+    <KLineChart dataLoader={loader} symbol={symbol} period={period}>
       <BollingerBands period={period} />
     </KLineChart>
   );
@@ -390,17 +422,25 @@ registerLocale("ru-RU", {
 ```
 src/
   index.ts                    # Public API barrel export
-  types.ts                    # React-specific types
+  types.ts                    # React-specific types (props, payload maps)
+  events.ts                   # ActionPayloadMap + TypedActionCallback
+  subscribeChartAction.ts     # Shared action subscribe/unsubscribe helper
   KLineChartContext.ts        # React context for chart instance
   KLineChart.tsx              # Core component
   hooks/
     useKLineChart.ts          # Context-based chart access
-    useChartEvent.ts          # Event subscription hook
+    useChartEvent.ts          # Typed event subscription hook
     useIndicator.ts           # Indicator lifecycle hook
     useOverlay.ts             # Overlay lifecycle hook
+    useCrosshair.ts           # Reactive crosshair state
+    useVisibleRange.ts        # Reactive visible range
+    useBarSpace.ts            # Reactive bar space
+    useDataList.ts            # Reactive data list
+    usePane.ts                # Reactive pane options
   components/
     Indicator.tsx             # <KLineChart.Indicator>
     Overlay.tsx               # <KLineChart.Overlay>
+    Widget.tsx                # <KLineChart.Widget>
 ```
 
 **Design principles:**
@@ -410,7 +450,9 @@ src/
 - **Ref escape hatch** exposes the full `Chart` instance for imperative operations
 - **Context** enables hooks and sub-components in descendants
 - **Stable event subscriptions** — callbacks stored in refs, no re-subscribe churn
-- **Natural cleanup order** — React unmounts children before parent, so indicators/overlays clean up before `dispose()`
+- **Strongly typed events** — payloads carry their real types
+- **StrictMode-safe** — React unmounts children before parent, so indicators/overlays clean up before `dispose()`
+- **No duplicate observers** — klinecharts v10 manages its own `ResizeObserver`; the wrapper does not add another
 
 ## Development
 
@@ -419,6 +461,8 @@ pnpm install
 pnpm build          # Build library
 pnpm dev            # Build in watch mode
 pnpm typecheck      # TypeScript type check
+pnpm test           # Run vitest unit tests
+pnpm test:watch     # Run tests in watch mode
 
 # Run example
 cd example

@@ -1,29 +1,28 @@
 import type {
-  Chart,
   Options,
   Styles,
   IndicatorCreate,
   OverlayCreate,
   PaneOptions,
   YAxisOverride,
+  XAxisOverride,
   Formatter,
   SymbolInfo,
   Period,
   ThousandsSeparator,
   DecimalFold,
   DataLoader,
-  ActionCallback,
   ActionType,
   ZoomAnchor,
   ZoomAnchorType,
   DeepPartial,
-  Nullable,
-  IndicatorFilter,
-  OverlayFilter,
-  PickPartial,
+  Hotkey,
   KLineData,
+  PickPartial,
 } from "klinecharts";
 import type { HTMLAttributes, ReactNode, Ref } from "react";
+import type { Chart } from "klinecharts";
+import type { ActionPayloadMap, TypedActionCallback } from "./events";
 
 // ---------------------------------------------------------------------------
 // KLineChart component props
@@ -41,7 +40,14 @@ export interface KLineChartProps extends Omit<
 
   // -- Data ------------------------------------------------------------------
 
-  /** Static data array to apply to the chart. Calls `applyNewData`. */
+  /**
+   * Static data array to apply to the chart.
+   *
+   * The array identity is used as the effect dependency: replacing the
+   * array re-applies the data, but mutating it in place does not. For
+   * streaming/realtime updates prefer {@link KLineChartProps.dataLoader}
+   * with a `subscribeBar` implementation.
+   */
   data?: KLineData[];
 
   /** Data loader for fetching and subscribing to bar data. Calls `setDataLoader`. */
@@ -100,37 +106,51 @@ export interface KLineChartProps extends Omit<
   /** Width of a single bar in pixels. Calls `setBarSpace`. */
   barSpace?: number;
 
+  /** Hot-key configuration. Calls `setHotkey`. */
+  hotkey?: Partial<Hotkey>;
+
+  /** Override the X axis. Calls `overrideXAxis`. */
+  xAxis?: XAxisOverride;
+
+  /** Override the Y axis. Calls `overrideYAxis`. */
+  yAxis?: YAxisOverride;
+
   // -- Event callbacks -------------------------------------------------------
 
   /** Fired once the chart instance has been created. */
   onReady?: (chart: Chart) => void;
 
   /** Chart zoom event. */
-  onZoom?: ActionCallback;
+  onZoom?: TypedActionCallback<"onZoom">;
 
-  /** Chart scroll event. */
-  onScroll?: ActionCallback;
+  /**
+   * Chart scroll event (klinecharts `onScroll` action).
+   *
+   * Named `onChartScroll` to avoid colliding with the native DOM
+   * `onScroll` handler that is passed through to the container element.
+   */
+  onChartScroll?: TypedActionCallback<"onScroll">;
 
   /** Visible data range changed. */
-  onVisibleRangeChange?: ActionCallback;
+  onVisibleRangeChange?: TypedActionCallback<"onVisibleRangeChange">;
 
   /** Crosshair position changed. */
-  onCrosshairChange?: ActionCallback;
+  onCrosshairChange?: TypedActionCallback<"onCrosshairChange">;
 
   /** Candle bar clicked. */
-  onCandleBarClick?: ActionCallback;
+  onCandleBarClick?: TypedActionCallback<"onCandleBarClick">;
 
   /** Pane drag event. */
-  onPaneDrag?: ActionCallback;
+  onPaneDrag?: TypedActionCallback<"onPaneDrag">;
 
   /** Candle tooltip feature clicked. */
-  onCandleTooltipFeatureClick?: ActionCallback;
+  onCandleTooltipFeatureClick?: TypedActionCallback<"onCandleTooltipFeatureClick">;
 
   /** Indicator tooltip feature clicked. */
-  onIndicatorTooltipFeatureClick?: ActionCallback;
+  onIndicatorTooltipFeatureClick?: TypedActionCallback<"onIndicatorTooltipFeatureClick">;
 
   /** Crosshair feature clicked. */
-  onCrosshairFeatureClick?: ActionCallback;
+  onCrosshairFeatureClick?: TypedActionCallback<"onCrosshairFeatureClick">;
 }
 
 // ---------------------------------------------------------------------------
@@ -158,14 +178,4 @@ export interface UseOverlayOptions {
   value: string | OverlayCreate | Array<string | OverlayCreate>;
 }
 
-// ---------------------------------------------------------------------------
-// Re-exported convenience types
-// ---------------------------------------------------------------------------
-
-export type {
-  ActionType,
-  ActionCallback,
-  IndicatorFilter,
-  OverlayFilter,
-  Nullable,
-};
+export type { ActionPayloadMap, TypedActionCallback, ActionType };

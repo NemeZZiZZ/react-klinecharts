@@ -55,9 +55,15 @@ export function useOverlay(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, baseName, isBatch, overlayId]);
 
-  // Override when value config changes (only for object configs)
+  // Override when value config changes (only for single object configs).
+  // Skip the first run: the create-effect above already applied the value.
+  const firstOverrideRef = useRef(true);
   useEffect(() => {
     if (!chart || isString || isBatch) return;
+    if (firstOverrideRef.current) {
+      firstOverrideRef.current = false;
+      return;
+    }
     chart.overrideOverlay({ ...(value as OverlayCreate), id: overlayId });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, valueKey, isString, isBatch, overlayId]);

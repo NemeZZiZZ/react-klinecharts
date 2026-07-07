@@ -1,10 +1,9 @@
-import { useRef, useState, useMemo, useCallback } from "react";
+import { useRef, useState, useMemo, useCallback, useEffect } from "react";
 import {
   Chart,
   KLineChart,
   useKLineChart,
-  useChartEvent,
-  type Crosshair,
+  useCrosshair,
   type DataLoader,
 } from "../../src";
 import { generatedKLineDataList, generateRealtimeTick } from "./utils";
@@ -22,13 +21,13 @@ type DataSource = "none" | "generated" | "binance";
 
 function CrosshairTracker() {
   const chart = useKLineChart();
+  const crosshair = useCrosshair();
   const [info, setInfo] = useState("Move crosshair over chart...");
 
-  useChartEvent("onCrosshairChange", (data) => {
+  useEffect(() => {
     if (!chart) return;
-    const crosshair = data as Crosshair;
     // Resolve kLineData from pixel coordinates
-    if (crosshair.x != null) {
+    if (crosshair?.x != null) {
       const points = chart.convertFromPixel([{ x: crosshair.x }], {
         paneId: "candle_pane",
       }) as Array<{ dataIndex?: number }>;
@@ -44,7 +43,7 @@ function CrosshairTracker() {
       }
     }
     setInfo("Move crosshair over chart...");
-  });
+  }, [chart, crosshair]);
 
   return (
     <div style={{ padding: "8px 0", fontFamily: "monospace", fontSize: 13 }}>
