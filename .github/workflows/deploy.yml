@@ -27,19 +27,18 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Install root dependencies
+      # `docs` is a pnpm workspace member, so a single root install brings in
+      # both the library and the docs site dependencies. The Vite alias in
+      # docs/astro.config.ts points at ../src, so the library must be built
+      # before the docs build.
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build library
         run: pnpm build
 
-      - name: Install docs dependencies
-        working-directory: docs
-        run: pnpm install --ignore-workspace --frozen-lockfile
-
       - name: Build docs site
-        working-directory: docs
-        run: pnpm build
+        run: pnpm --filter react-klinecharts-docs build
 
       - uses: actions/configure-pages@v5
 
