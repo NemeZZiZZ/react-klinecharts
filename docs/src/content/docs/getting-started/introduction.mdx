@@ -1,0 +1,42 @@
+---
+title: Introduction
+description: A flexible React wrapper for KlineCharts with hooks, declarative sub-components, and full TypeScript support.
+---
+
+import ChartDemo from "../../../components/demo/ChartDemo.tsx";
+
+**react-klinecharts** is a thin, fully-typed React wrapper around [KlineCharts](https://klinecharts.com) v10 — a lightweight, zero-dependency, highly-customizable candlestick charting library.
+
+It turns KlineCharts' imperative API into idiomatic React: declarative props drive reactive chart updates, sub-components manage indicators/overlays/axes, and hooks expose reactive chart state.
+
+## Features
+
+- **Declarative props** for all reactive chart settings (`styles`, `locale`, `timezone`, `zoomEnabled`, …)
+- **Sub-components**: `<KLineChart.Indicator>`, `<KLineChart.Overlay>`, `<KLineChart.Widget>`, `<KLineChart.YAxis>`
+- **Hooks**: `useKLineChart`, `useIndicator`, `useOverlay`, `useYAxis`, `useChartEvent`, `useCrosshair`, `useVisibleRange`, `useBarSpace`, `useDataList`, `usePane`, `useYAxes`
+- **Strongly-typed event callbacks** — no more `as Crosshair` casts
+- **Full imperative access** via a forwarded `ref`
+- **Re-exports** all KlineCharts types and utilities
+- **StrictMode-safe**, no extra dependencies (KlineCharts manages its own `ResizeObserver`)
+
+## Live demo
+
+The chart below is a real `react-klinecharts` instance rendered inside this page. Toggle the controls to see reactive props, sub-components, and the v10 multi-YAxis API in action.
+
+<ChartDemo client:only="react" />
+
+## Why a wrapper?
+
+KlineCharts exposes an imperative, instance-based API: you call `init()`, then drive the chart with methods like `chart.setStyles()`, `chart.createIndicator()`, and `chart.subscribeAction()`. That model doesn't map cleanly onto React's declarative rendering and effect lifecycle.
+
+`react-klinecharts` bridges the two:
+
+| KlineCharts (imperative)                  | react-klinecharts (declarative)                     |
+| ----------------------------------------- | --------------------------------------------------- |
+| `chart.setLocale('ru-RU')`                | `<KLineChart locale="ru-RU" />`                     |
+| `chart.createIndicator({ name: 'MA' })`   | `<KLineChart.Indicator value={{ name: 'MA' }} />`   |
+| `chart.createOverlay('priceLine')`        | `<KLineChart.Overlay value="priceLine" />`          |
+| `chart.createYAxis({ paneId, position })` | `<KLineChart.YAxis value={{ paneId, position }} />` |
+| `chart.subscribeAction('onZoom', cb)`     | `<KLineChart onZoom={cb} />`                        |
+
+Ready to start? Head to the [Installation](./installation/) guide.

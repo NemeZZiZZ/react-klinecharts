@@ -8,6 +8,7 @@ import {
   useBarSpace,
   useDataList,
   usePane,
+  useYAxes,
 } from "../src";
 import { __mockCharts } from "./setup";
 
@@ -132,6 +133,33 @@ describe("state-tracking hooks", () => {
     // Probe rendered outside any <KLineChart> provider.
     const { getByTestId } = render(<Probe />);
     expect(getByTestId("r").textContent).toBe("null");
+  });
+
+  it("useYAxes returns an array and re-reads on visible-range change", () => {
+    let seen: unknown = undefined;
+    function Probe() {
+      seen = useYAxes();
+      return null;
+    }
+
+    const { rerender } = render(
+      <KLineChart>
+        <Probe />
+      </KLineChart>
+    );
+
+    // The hook seeds from chart.getYAxes() in an effect; force a second render.
+    rerender(
+      <KLineChart>
+        <Probe />
+      </KLineChart>
+    );
+
+    expect(Array.isArray(seen)).toBe(true);
+
+    // Emitting a visible-range change triggers a re-read (still [] from stub).
+    emit("onVisibleRangeChange", { from: 1, to: 2, realFrom: 1, realTo: 2 });
+    expect(Array.isArray(seen)).toBe(true);
   });
 });
 

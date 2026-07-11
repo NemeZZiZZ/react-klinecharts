@@ -1,4 +1,4 @@
-import { KLineData } from "../../src";
+import type { KLineData } from "react-klinecharts";
 
 // Constants
 const PRICE_VARIATION = 20;
@@ -9,16 +9,12 @@ const VOLUME_VARIATION = 50;
 const MINUTE_MS = 60 * 1000;
 
 /**
- * Generates synthetic K-line (candlestick) market data
- * @param baseTimestamp - Starting timestamp (default: current time)
- * @param basePrice - Initial price point (default: 5000)
- * @param dataSize - Number of data points to generate (default: 800)
- * @returns Array of KLineData sorted by timestamp ascending
+ * Generates synthetic K-line (candlestick) market data.
  */
 export function generatedKLineDataList(
   baseTimestamp: number = Date.now(),
   basePrice: number = 5000,
-  dataSize: number = 800
+  dataSize: number = 800,
 ): KLineData[] {
   const dataList: KLineData[] = new Array(dataSize);
   const timestamp = Math.floor(baseTimestamp / MINUTE_MS) * MINUTE_MS;
@@ -27,10 +23,8 @@ export function generatedKLineDataList(
   const prices = new Array(PRICE_COUNT);
 
   for (let i = 0; i < dataSize; i++) {
-    // Generate base price with random walk
     currentPrice += Math.random() * PRICE_VARIATION - PRICE_OFFSET;
 
-    // Generate price variations
     for (let j = 0; j < PRICE_COUNT; j++) {
       prices[j] = currentPrice + (Math.random() - 0.5) * 12;
     }
@@ -62,25 +56,19 @@ export function generatedKLineDataList(
 
 /**
  * Simulates a real-time tick by generating a new bar or updating the current one.
- * @param lastBar - The most recent bar to base the tick on
- * @param periodMs - Period duration in ms (default: 1 minute)
- * @returns A new KLineData tick
  */
 export function generateRealtimeTick(
   lastBar: KLineData,
-  periodMs: number = MINUTE_MS
+  periodMs: number = MINUTE_MS,
 ): KLineData {
   const now = Date.now();
-  const currentPeriodStart =
-    Math.floor(now / periodMs) * periodMs;
-  const lastPeriodStart =
-    Math.floor(lastBar.timestamp / periodMs) * periodMs;
+  const currentPeriodStart = Math.floor(now / periodMs) * periodMs;
+  const lastPeriodStart = Math.floor(lastBar.timestamp / periodMs) * periodMs;
 
   const priceDelta = (Math.random() - 0.5) * 4;
   const newClose = lastBar.close + priceDelta;
 
   if (currentPeriodStart > lastPeriodStart) {
-    // New bar
     const volume = VOLUME_BASE + Math.random() * VOLUME_VARIATION;
     return {
       timestamp: currentPeriodStart,
@@ -93,7 +81,6 @@ export function generateRealtimeTick(
     };
   }
 
-  // Update current bar
   return {
     ...lastBar,
     timestamp: currentPeriodStart,

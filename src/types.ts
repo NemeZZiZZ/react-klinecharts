@@ -1,9 +1,6 @@
 import type {
   Options,
   Styles,
-  IndicatorCreate,
-  OverlayCreate,
-  PaneOptions,
   YAxisOverride,
   XAxisOverride,
   Formatter,
@@ -12,7 +9,6 @@ import type {
   ThousandsSeparator,
   DecimalFold,
   DataLoader,
-  ActionType,
   ZoomAnchor,
   ZoomAnchorType,
   DeepPartial,
@@ -156,26 +152,9 @@ export interface KLineChartProps extends Omit<
 // ---------------------------------------------------------------------------
 // Hook option types
 // ---------------------------------------------------------------------------
+//
+// The canonical `UseIndicatorOptions` / `UseOverlayOptions` / `UseYAxisOptions`
+// live next to their hooks (see src/hooks/*) and are re-exported from
+// src/index.ts. They are intentionally NOT duplicated here.
 
-export interface UseIndicatorOptions {
-  /** Indicator name or full creation config. */
-  value: string | IndicatorCreate;
-  /** Whether to stack on existing indicators in the same pane. */
-  isStack?: boolean;
-  /** Pane options for the indicator pane. */
-  pane?: PaneOptions;
-  /** Y axis override for the indicator pane. */
-  yAxis?: YAxisOverride;
-  /**
-   * Pane options for the indicator pane.
-   * @deprecated Renamed to `pane` to match KLineCharts v10. Use `pane` instead.
-   */
-  paneOptions?: PaneOptions;
-}
-
-export interface UseOverlayOptions {
-  /** Overlay name, creation config, or an array for batch creation. */
-  value: string | OverlayCreate | Array<string | OverlayCreate>;
-}
-
-export type { ActionPayloadMap, TypedActionCallback, ActionType };
+export type { ActionPayloadMap, TypedActionCallback };

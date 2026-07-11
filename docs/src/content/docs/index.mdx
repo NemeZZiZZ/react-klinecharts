@@ -1,0 +1,39 @@
+---
+title: react-klinecharts
+description: A flexible React wrapper for KlineCharts with hooks, declarative sub-components, and full TypeScript support.
+template: splash
+hero:
+  tagline: A flexible React wrapper for KlineCharts — hooks, declarative sub-components, and full TypeScript support.
+  actions:
+    - text: Quick Start
+      link: /getting-started/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: Introduction
+      link: /getting-started/introduction/
+      icon: open-book
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+import ChartDemo from "../../components/demo/ChartDemo.tsx";
+
+<ChartDemo client:only="react" />
+
+<CardGrid stagger>
+  <Card title="Declarative props" icon="document">
+    Reactive props drive every chart setting. No manual effect wiring.
+  </Card>
+  <Card title="Sub-components" icon="puzzle">
+    `<KLineChart.Indicator>`, `.Overlay`, `.Widget`, `.YAxis` manage their own lifecycle.
+  </Card>
+  <Card title="Typed events" icon="bell">
+    Strongly-typed callbacks — `onCrosshairChange` receives a `Crosshair`, no casts.
+  </Card>
+  <Card title="Hooks" icon="plug">
+    `useIndicator`, `useCrosshair`, `useVisibleRange`, and more for reactive chart state.
+  </Card>
+</CardGrid>
+
+## Get started
+
+Head to the [Quick Start](/getting-started/quick-start/) to render your first chart, or browse the full [component](/components/kline-chart/) and [hook](/hooks/overview/) reference.

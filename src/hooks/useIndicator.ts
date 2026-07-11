@@ -12,27 +12,35 @@ export interface UseIndicatorOptions {
   value: string | IndicatorCreate;
   /** Whether to stack on existing indicators in the same pane. */
   isStack?: boolean;
-  /** Pane options for the indicator pane. */
-  pane?: PaneOptions;
-  /** Y axis override for the indicator pane. */
+  /** Options applied to the indicator pane via `setPaneOptions`. */
+  pane?: Partial<PaneOptions>;
+  /**
+   * Y axis configuration for the indicator pane. Applied via `createYAxis`
+   * (idempotent in KLineCharts v10).
+   */
   yAxis?: YAxisOverride;
   /**
-   * Pane options for the indicator pane.
+   * Options applied to the indicator pane.
    * @deprecated Renamed to `pane` to match KLineCharts v10. Use `pane` instead.
    */
-  paneOptions?: PaneOptions;
+  paneOptions?: Partial<PaneOptions>;
 }
 
 /**
  * Manages the lifecycle of a technical indicator.
- * Creates the indicator on mount, removes it on unmount, and overrides its
- * config when `value` changes.
  *
- * @returns The pane ID the indicator was added to, or `null`.
+ * In KLineCharts v10, `createIndicator(value, isStack?)` no longer accepts a
+ * separate options object: `paneId`/`yAxisId` live on the `IndicatorCreate`
+ * value itself. This hook therefore:
+ * 1. Creates the indicator (optionally passing a stable `paneId`/`id`).
+ * 2. Applies `pane` to the resulting pane via `setPaneOptions`.
+ * 3. Configures the pane's Y axis via `createYAxis` when `yAxis` is provided.
+ *
+ * @returns The indicator id, or `null`.
  */
 export function useIndicator(options: UseIndicatorOptions): Nullable<string> {
   const chart = useKLineChart();
-  const paneIdRef = useRef<Nullable<string>>(null);
+  const indicatorIdRef = useRef<Nullable<string>>(null);
   const { value, isStack, pane, paneOptions, yAxis } = options;
 
   // Stable unique ID per component instance — survives re-renders,
@@ -45,10 +53,11 @@ export function useIndicator(options: UseIndicatorOptions): Nullable<string> {
   // Serialize value for dependency comparison (small config objects)
   const valueKey = typeof value === "string" ? value : JSON.stringify(value);
 
-  // Serialize pane/yAxis so changing them recreates the indicator (klinecharts
-  // has no API to reassign an existing indicator to a different pane or axis).
-  const paneKey =
-    (pane ?? paneOptions) ? JSON.stringify(pane ?? paneOptions) : "";
+  // Recreate the indicator only when its *identity* changes — the indicator
+  // name, the stacking flag, or the target pane id. Pane *options* (height,
+  // state, ...) are applied live via setPaneOptions below and must NOT trigger
+  // a full recreation.
+  const paneIdKey = pane?.id ?? paneOptions?.id ?? "";
   const yAxisKey = yAxis ? JSON.stringify(yAxis) : "";
 
   useEffect(() => {
@@ -59,18 +68,55 @@ export function useIndicator(options: UseIndicatorOptions): Nullable<string> {
         ? { name: value, id: indicatorId }
         : { ...value, id: indicatorId };
 
-    paneIdRef.current = chart.createIndicator(create, {
-      isStack,
-      pane: pane ?? paneOptions,
-      yAxis,
-    });
+    indicatorIdRef.current = chart.createIndicator(create, isStack);
 
     return () => {
       chart.removeIndicator({ id: indicatorId });
-      paneIdRef.current = null;
+      indicatorIdRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart, indicatorName, isStack, indicatorId, paneKey, yAxisKey]);
+  }, [chart, indicatorName, isStack, indicatorId, paneIdKey, yAxisKey]);
+
+  // Apply pane options to the indicator pane. `setPaneOptions` in v10 accepts a
+  // `Partial<PaneOptions>` and targets the pane whose id matches `options.id`.
+  // Re-run whenever the full pane config changes so live tweaks (height, ...)
+  // take effect without recreating the indicator.
+  const paneOptionsKey =
+    (pane ?? paneOptions) ? JSON.stringify(pane ?? paneOptions) : "";
+  useEffect(() => {
+    if (!chart || !indicatorIdRef.current) return;
+    const resolvedPane = pane ?? paneOptions;
+    if (!resolvedPane) return;
+
+    const indicator = chart
+      .getIndicators({ id: indicatorIdRef.current })
+      .find((i) => i.id === indicatorIdRef.current);
+    if (!indicator) return;
+
+    chart.setPaneOptions({ id: indicator.paneId, ...resolvedPane });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chart, paneOptionsKey, paneIdKey]);
+
+  // Configure the indicator pane's Y axis. `createIndicator` already creates an
+  // axis for the indicator, so `createYAxis` would be a no-op here. Use
+  // `overrideYAxis` instead, which resolves the existing axis by id and applies
+  // the config. Re-run after (re)creation so a freshly created indicator's axis
+  // is configured too.
+  useEffect(() => {
+    if (!chart || !indicatorIdRef.current || !yAxis) return;
+
+    const indicator = chart
+      .getIndicators({ id: indicatorIdRef.current })
+      .find((i) => i.id === indicatorIdRef.current);
+    if (!indicator) return;
+
+    chart.overrideYAxis({
+      ...yAxis,
+      paneId: indicator.paneId,
+      id: indicator.yAxisId,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chart, yAxisKey, paneIdKey]);
 
   // Override indicator config when the value object changes.
   // We must skip the first run: the create-effect above already applied the
@@ -86,5 +132,5 @@ export function useIndicator(options: UseIndicatorOptions): Nullable<string> {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, valueKey, indicatorId]);
 
-  return paneIdRef.current;
+  return indicatorIdRef.current;
 }

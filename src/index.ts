@@ -15,7 +15,10 @@ export { useVisibleRange } from "./hooks/useVisibleRange";
 export { useBarSpace } from "./hooks/useBarSpace";
 export { useDataList } from "./hooks/useDataList";
 export { usePane } from "./hooks/usePane";
+export { useYAxis } from "./hooks/useYAxis";
+export { useYAxes } from "./hooks/useYAxes";
 export { Widget } from "./components/Widget";
+export { YAxis } from "./components/YAxis";
 
 // Internal helpers (re-exported for advanced consumers)
 export { subscribeChartAction } from "./subscribeChartAction";
@@ -24,8 +27,10 @@ export { subscribeChartAction } from "./subscribeChartAction";
 export type { KLineChartProps } from "./types";
 export type { UseIndicatorOptions } from "./hooks/useIndicator";
 export type { UseOverlayOptions } from "./hooks/useOverlay";
+export type { UseYAxisOptions } from "./hooks/useYAxis";
 export type { IndicatorProps } from "./components/Indicator";
 export type { OverlayProps } from "./components/Overlay";
+export type { YAxisProps } from "./components/YAxis";
 export type { WidgetProps } from "./components/Widget";
 export type { ActionPayloadMap, TypedActionCallback } from "./events";
 

@@ -5,8 +5,8 @@ A flexible React wrapper for [KlineCharts](https://klinecharts.com) with hooks, 
 [Live Demo](https://nemezzizz.github.io/react-klinecharts/)
 
 - Declarative props for all reactive chart settings
-- `<KLineChart.Indicator>`, `<KLineChart.Overlay>` and `<KLineChart.Widget>` sub-components
-- Hooks: `useKLineChart`, `useIndicator`, `useOverlay`, `useChartEvent`, `useCrosshair`, `useVisibleRange`, `useBarSpace`, `useDataList`, `usePane`
+- `<KLineChart.Indicator>`, `<KLineChart.Overlay>`, `<KLineChart.Widget>` and `<KLineChart.YAxis>` sub-components
+- Hooks: `useKLineChart`, `useIndicator`, `useOverlay`, `useYAxis`, `useChartEvent`, `useCrosshair`, `useVisibleRange`, `useBarSpace`, `useDataList`, `usePane`, `useYAxes`
 - **Strongly typed event callbacks** — no more `as Crosshair` casts
 - Full imperative access via ref
 - Re-exports all klinecharts types and utilities
@@ -135,8 +135,22 @@ Declarative indicator management. Renders nothing — purely manages indicator l
 |------|------|-------------|
 | `value` | `string \| IndicatorCreate` | Indicator name or full config |
 | `isStack` | `boolean` | Stack on existing indicators in same pane |
-| `pane` | `PaneOptions` | Options for the indicator pane |
-| `yAxis` | `YAxisOverride` | Y axis override for the indicator pane |
+| `pane` | `Partial<PaneOptions>` | Options applied to the indicator pane via `setPaneOptions` (e.g. `{ height: 80 }`) |
+| `yAxis` | `YAxisOverride` | Y axis config for the indicator pane, applied via `createYAxis` |
+
+> **v10 note:** klinecharts 10.0.0 changed `createIndicator(value, isStack)` — `paneId`/`yAxisId` are now properties of the `IndicatorCreate` value itself. `useIndicator` returns the indicator id (not the pane id).
+
+### `<KLineChart.YAxis>`
+
+Declarative standalone Y axis management. KLineCharts v10 supports multiple Y axes per pane. Renders nothing — purely manages the axis lifecycle via `createYAxis` / `overrideYAxis` / `removeYAxis`.
+
+```tsx
+<KLineChart.YAxis value={{ paneId: "candle", position: "left" }} />
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `YAxisOverride` | Y axis config. `createYAxis` is idempotent, so changing `value` re-applies safely. |
 
 ### `<KLineChart.Overlay>`
 
@@ -200,6 +214,7 @@ These hooks subscribe to chart actions and re-render the host component when the
 | `useBarSpace()` | `BarSpace \| null` | `onVisibleRangeChange` (covers zoom/resize) |
 | `useDataList()` | `KLineData[] \| null` | `onVisibleRangeChange` |
 | `usePane()` / `usePane(id)` | `PaneOptions[]` or `Nullable<PaneOptions>` | `onVisibleRangeChange` |
+| `useYAxes(filter?)` | `YAxis[]` | `onVisibleRangeChange` |
 
 ```tsx
 function CrosshairInfo() {
@@ -233,6 +248,28 @@ function MyOverlay() {
     value: { name: "priceLine", points: [{ value: 50000 }] },
   });
   return null;
+}
+```
+
+#### `useYAxis(options)`
+
+Manages a standalone Y axis lifecycle. Creates via `createYAxis` on mount, overrides on change, removes on unmount. Returns the axis id.
+
+```tsx
+function MyYAxis() {
+  const id = useYAxis({ value: { paneId: "candle", position: "left" } });
+  return null;
+}
+```
+
+#### `useYAxes(filter?)`
+
+Reactive read of the chart's Y axes. Returns `YAxis[]` and re-renders on visible-range change.
+
+```tsx
+function AxisCount() {
+  const axes = useYAxes({ paneId: "candle" });
+  return <span>{axes.length} axis(es)</span>;
 }
 ```
 
@@ -283,8 +320,14 @@ chartRef.current?.getSize(paneId, position);
 chartRef.current?.setPaneOptions(options);
 chartRef.current?.getPaneOptions(id);
 
+// Y axis management (v10 multi-YAxis)
+chartRef.current?.createYAxis(yAxisOverride);
+chartRef.current?.removeYAxis({ id });
+chartRef.current?.getYAxes(filter);
+chartRef.current?.overrideYAxis(yAxisOverride);
+
 // Imperative indicator/overlay operations
-chartRef.current?.createIndicator(value, { isStack, pane, yAxis });
+chartRef.current?.createIndicator(value, isStack);
 chartRef.current?.getIndicators(filter);
 chartRef.current?.createOverlay(value);
 chartRef.current?.getOverlays(filter);
@@ -432,15 +475,18 @@ src/
     useChartEvent.ts          # Typed event subscription hook
     useIndicator.ts           # Indicator lifecycle hook
     useOverlay.ts             # Overlay lifecycle hook
+    useYAxis.ts               # Y axis lifecycle hook
     useCrosshair.ts           # Reactive crosshair state
     useVisibleRange.ts        # Reactive visible range
     useBarSpace.ts            # Reactive bar space
     useDataList.ts            # Reactive data list
     usePane.ts                # Reactive pane options
+    useYAxes.ts               # Reactive Y axes
   components/
     Indicator.tsx             # <KLineChart.Indicator>
     Overlay.tsx               # <KLineChart.Overlay>
     Widget.tsx                # <KLineChart.Widget>
+    YAxis.tsx                 # <KLineChart.YAxis>
 ```
 
 **Design principles:**
@@ -464,11 +510,14 @@ pnpm typecheck      # TypeScript type check
 pnpm test           # Run vitest unit tests
 pnpm test:watch     # Run tests in watch mode
 
-# Run example
-cd example
-pnpm install
+# Run the docs site (Starlight) — includes a live, interactive demo
+cd docs
+pnpm install --ignore-workspace
 pnpm dev
 ```
+
+Full documentation lives in [`docs/`](./docs) and is published at
+<https://nemezzizz.github.io/react-klinecharts/>.
 
 ## License
 

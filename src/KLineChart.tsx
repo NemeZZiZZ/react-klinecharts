@@ -11,6 +11,7 @@ import { KLineChartContext } from "./KLineChartContext";
 import { Indicator } from "./components/Indicator";
 import { Overlay } from "./components/Overlay";
 import { Widget } from "./components/Widget";
+import { YAxis } from "./components/YAxis";
 import { subscribeChartAction } from "./subscribeChartAction";
 import type { ActionPayloadMap } from "./events";
 import type { KLineChartProps } from "./types";
@@ -316,4 +317,5 @@ export const KLineChart = Object.assign(KLineChartInner, {
   Indicator,
   Overlay,
   Widget,
+  YAxis,
 });

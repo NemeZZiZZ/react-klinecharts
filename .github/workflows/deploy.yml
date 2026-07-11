@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy docs to GitHub Pages
 
 on:
   push:
@@ -33,17 +33,19 @@ jobs:
       - name: Build library
         run: pnpm build
 
-      - name: Install example dependencies
-        working-directory: example
-        run: pnpm install --frozen-lockfile
+      - name: Install docs dependencies
+        working-directory: docs
+        run: pnpm install --ignore-workspace --frozen-lockfile
 
-      - name: Build example
-        working-directory: example
+      - name: Build docs site
+        working-directory: docs
         run: pnpm build
+
+      - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: example/dist
+          path: docs/dist
 
   deploy:
     needs: build

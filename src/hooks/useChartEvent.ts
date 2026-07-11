@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { ActionCallback } from "klinecharts";
-import type { ActionType } from "../types";
+import type { ActionCallback, ActionType } from "klinecharts";
 import type { ActionPayloadMap, TypedActionCallback } from "../events";
 import { useKLineChart } from "./useKLineChart";
 

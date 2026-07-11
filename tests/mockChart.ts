@@ -24,6 +24,18 @@ export function createMockChart(): MockChart {
       case "createIndicator":
       case "createOverlay":
         return "mock-pane-id";
+      case "createYAxis":
+        return "mock-yAxis-id";
+      case "getIndicators":
+        // Mimic v10: createIndicator stores paneId/yAxisId on the indicator.
+        return [
+          {
+            id: "mock-pane-id",
+            paneId: "mock-pane-id",
+            yAxisId: "mock-yAxis-id",
+            name: "MA",
+          },
+        ];
       case "getVisibleRange":
         return { from: 0, to: 10, realFrom: 0, realTo: 10 };
       case "getBarSpace":
@@ -42,6 +54,10 @@ export function createMockChart(): MockChart {
       case "getPaneOptions":
         // No id (or explicit undefined) → all panes (array). With an id → not found (null).
         return args[0] == null ? [] : null;
+      case "getYAxes":
+        return [];
+      case "removeYAxis":
+        return true;
       default:
         return undefined;
     }
@@ -109,6 +125,9 @@ export function createMockChart(): MockChart {
     "createOverlay",
     "getOverlays",
     "setPaneOptions",
+    "createYAxis",
+    "removeYAxis",
+    "getYAxes",
     "overrideYAxis",
     "overrideXAxis",
     "getPaneOptions",

@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-07-11
+
+First stable release. Targets the klinecharts **10.0.0** stable release and ships a full Starlight documentation site.
+
+### Breaking
+- Upgraded to the klinecharts **10.0.0** stable release. The `createIndicator` instance API changed from `createIndicator(value, options)` to `createIndicator(value, isStack)` — `paneId`/`yAxisId` are now properties of the `IndicatorCreate` value itself. `useIndicator` was rewritten accordingly.
+- `useIndicator` now returns the **indicator id** instead of the pane id (klinecharts v10 returns an indicator id from `createIndicator`).
+- The `pane` / `paneOptions` options of `<KLineChart.Indicator>` / `useIndicator` are now `Partial<PaneOptions>` (applied via `setPaneOptions`) to match the new klinecharts v10 `setPaneOptions` signature. This restores the `pane={{ height: 80 }}` shorthand that became invalid after the `PaneOptions` type gained required fields.
+
+### Added
+- New `<KLineChart.YAxis>` declarative sub-component and `useYAxis(options)` hook for managing standalone Y axes, leveraging klinecharts v10's multi-YAxis support (`createYAxis` / `removeYAxis`).
+- New `useYAxes(filter?)` reactive hook that reads `chart.getYAxes()` and re-renders on visible-range change (mirrors `usePane`).
+
+### Changed
+- Bumped `klinecharts` to `^10.0.0`.
+- `useIndicator` now applies the `pane` option live via `setPaneOptions` (targeting the indicator's pane id) and the `yAxis` option via `overrideYAxis` (since `createIndicator` already creates the axis, `createYAxis` would be a no-op). Recreating the indicator only triggers on identity changes (`name`, `isStack`, `pane.id`), not on pane-option tweaks.
+- Expanded the test mock (`mockChart.ts`) with `createYAxis`, `removeYAxis`, `getYAxes`, and a realistic `getIndicators` stub so the indicator pane/yAxis wiring can be exercised in tests.
+
+### Documentation
+- Added a full **Starlight** documentation site in `docs/` (28 pages: getting started, guides, component & hook reference). It includes a live, interactive chart demo migrated from the old `example/` app.
+- Removed the standalone `example/` Vite app — its demo now lives in the docs site (`docs/src/components/demo/`).
+- Removed the dead duplicate `UseIndicatorOptions` / `UseOverlayOptions` interfaces from `src/types.ts` (the canonical versions live next to their hooks).
+
 ## [0.3.0] - 2026-07-07
 
 ### Breaking
