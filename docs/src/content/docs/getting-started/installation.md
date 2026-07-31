@@ -47,7 +47,7 @@ npm install react react-dom
 | ------------------ | ------------------- |
 | `react`            | `^17.0.0 \|\| ^18.0.0 \|\| ^19.0.0` |
 | `react-dom`        | `^17.0.0 \|\| ^18.0.0 \|\| ^19.0.0` |
-| `klinecharts`      | `^10.0.0` (bundled) |
+| `klinecharts`      | `^10.0.1` (bundled) |
 | Node.js            | `>= 18`             |
 
 ## Verify the install

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-08-01
+
+### Changed
+- Bumped `klinecharts` to `^10.0.1` (root + docs). The 10.0.1 release is a bugfix/quality release — no breaking API changes. Upstream improvements include smoother mobile inertial scrolling, better touch handling (prevents page scrolling/browser gestures while dragging), area chart ripple lifecycle fixes, and canvas rendering scheduling/DPR handling. Bug fixes cover the built-in `PVT` indicator formula, `rgbToHex` channel handling, `hsla`/transparent color regex validation, and declaration-file builds.
+- The only type-level change upstream is an internal refactor of `IndicatorFigureStyle` (extracted `IndicatorFigureStyleBase`), which the wrapper does not reference directly, so `export * from "klinecharts"` continues to forward it transparently.
+- Removed the stale `docs/pnpm-lock.yaml`; the docs project is a workspace member governed by the root `pnpm-lock.yaml`.
+
 ## [1.0.0] - 2026-07-11
 
 First stable release. Targets the klinecharts **10.0.0** stable release and ships a full Starlight documentation site.
