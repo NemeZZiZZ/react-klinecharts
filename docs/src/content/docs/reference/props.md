@@ -40,6 +40,7 @@ The complete prop surface of `<KLineChart>`. It extends `HTMLAttributes<HTMLDivE
 | `rightMinVisibleBarCount` | `number`                                          | `setRightMinVisibleBarCount()`|
 | `barSpace`                | `number`                                          | `setBarSpace()`               |
 | `hotkey`                  | `Partial<Hotkey>`                                 | `setHotkey()`                 |
+| `layoutOptions`           | `DeepPartial<Layout>`                             | `setLayoutOptions()`          |
 | `xAxis`                   | `XAxisOverride`                                   | `overrideXAxis()`             |
 | `yAxis`                   | `YAxisOverride`                                   | `overrideYAxis()`             |
 

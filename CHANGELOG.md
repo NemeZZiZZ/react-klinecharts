@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-10-17
+
+### Added
+- New reactive prop `layoutOptions?: DeepPartial<Layout>` on `<KLineChart>`, forwarded to the new klinecharts 10.1.0 `setLayoutOptions()` instance method (updates default layout options after initialization). Documented in the props reference; the matching `getLayoutOptions()` is available on the chart instance via `ref` / `useKLineChart`.
+
+### Changed
+- Bumped `klinecharts` to `^10.1.0` (root + docs). No breaking API changes. Upstream additions: `setLayoutOptions()` / `getLayoutOptions()` instance methods, and callbacks (`CompareColorCallback`) for dynamically assigning colors to candlesticks, indicator OHLC bars, and last-price lines/labels — the color-callback types flow through transparently via `export * from "klinecharts"`. Upstream optimizations and fixes: time-axis tick generation now selects and caches ticks by time hierarchy (display stability + scrolling performance); fixes for `scrollByDistance` conflicting with an active fling-scroll animation, axis scrolling/scaling stopping when the pointer leaves the axis while dragging, rapid-click sequence detection, logarithmic y-axis labels and coordinate conversion for ranges containing negative/zero/sub-1 prices, and duplicate overlay y-axis labels on non-default axes in multi-axis panes.
+- Updated `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` to `klinecharts@10.1.0` so fresh upstream releases pass the CI install policy.
+- Expanded the test mock (`mockChart.ts`) with `setLayoutOptions` / `getLayoutOptions` stubs, and covered the `layoutOptions` prop forwarding in the reactive-props test.
+
 ## [1.0.1] - 2026-08-01
 
 ### Changed

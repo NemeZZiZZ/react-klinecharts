@@ -88,6 +88,7 @@ const KLineChartInner = forwardRef<Chart, KLineChartProps>(
       rightMinVisibleBarCount,
       barSpace,
       hotkey,
+      layoutOptions,
       xAxis,
       yAxis,
 
@@ -266,6 +267,11 @@ const KLineChartInner = forwardRef<Chart, KLineChartProps>(
       if (!chart || hotkey === undefined) return;
       chart.setHotkey(hotkey);
     }, [chart, hotkey]);
+
+    useEffect(() => {
+      if (!chart || layoutOptions === undefined) return;
+      chart.setLayoutOptions(layoutOptions);
+    }, [chart, layoutOptions]);
 
     useEffect(() => {
       if (!chart || xAxis === undefined) return;

@@ -57,6 +57,7 @@ These are synced to the chart via `useEffect`. A prop is only forwarded when it 
 | `rightMinVisibleBarCount` | `number`                                          | `setRightMinVisibleBarCount()`|
 | `barSpace`                | `number`                                          | `setBarSpace()`               |
 | `hotkey`                  | `Partial<Hotkey>`                                 | `setHotkey()`                 |
+| `layoutOptions`           | `DeepPartial<Layout>`                             | `setLayoutOptions()`          |
 | `xAxis`                   | `XAxisOverride`                                   | `overrideXAxis()`             |
 | `yAxis`                   | `YAxisOverride`                                   | `overrideYAxis()`             |
 

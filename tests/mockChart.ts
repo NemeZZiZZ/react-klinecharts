@@ -92,6 +92,8 @@ export function createMockChart(): MockChart {
     "setHotkey",
     "getHotkey",
     "getHotKey",
+    "setLayoutOptions",
+    "getLayoutOptions",
     "setSymbol",
     "getSymbol",
     "setPeriod",

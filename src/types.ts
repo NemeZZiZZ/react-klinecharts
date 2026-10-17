@@ -14,6 +14,7 @@ import type {
   DeepPartial,
   Hotkey,
   KLineData,
+  Layout,
   PickPartial,
 } from "klinecharts";
 import type { HTMLAttributes, ReactNode, Ref } from "react";
@@ -104,6 +105,9 @@ export interface KLineChartProps extends Omit<
 
   /** Hot-key configuration. Calls `setHotkey`. */
   hotkey?: Partial<Hotkey>;
+
+  /** Default layout options. Calls `setLayoutOptions`. */
+  layoutOptions?: DeepPartial<Layout>;
 
   /** Override the X axis. Calls `overrideXAxis`. */
   xAxis?: XAxisOverride;

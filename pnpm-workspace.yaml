@@ -24,7 +24,7 @@ minimumReleaseAgeExclude:
   - "@astrojs/compiler-binding-win32-x64-msvc@0.3.1"
   - "@astrojs/compiler-rs@0.3.1"
   - "@ungap/structured-clone@1.3.3"
-  - klinecharts@10.0.1
+  - klinecharts@10.1.0
 allowBuilds:
   esbuild: true
   sharp: true

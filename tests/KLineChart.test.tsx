@@ -82,6 +82,7 @@ describe("KLineChart reactive props", () => {
         scrollEnabled={false}
         barSpace={12}
         offsetRightDistance={42}
+        layoutOptions={{ barSpaceLimit: { min: 2, max: 20 } }}
       />
     );
 
@@ -92,6 +93,9 @@ describe("KLineChart reactive props", () => {
     expect(chart.__calls.setScrollEnabled.at(-1)?.[0]).toBe(false);
     expect(chart.__calls.setBarSpace.at(-1)?.[0]).toBe(12);
     expect(chart.__calls.setOffsetRightDistance.at(-1)?.[0]).toBe(42);
+    expect(chart.__calls.setLayoutOptions.at(-1)?.[0]).toEqual({
+      barSpaceLimit: { min: 2, max: 20 },
+    });
   });
 
   it("does not call setters for undefined props", () => {
